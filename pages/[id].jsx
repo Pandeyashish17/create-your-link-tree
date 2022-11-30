@@ -301,8 +301,7 @@ const LinkPage = () => {
                     type="text"
                     placeholder="Search…"
                     className="input input-bordered"
-                    rows={100}
-                    cols={50}
+                   
                     onChange={(e) => setDescription(e.target.value)}
                   >
                     {data?.description}
