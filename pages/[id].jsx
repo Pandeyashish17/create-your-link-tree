@@ -8,6 +8,7 @@ import {
   arrayRemove,
   doc,
   updateDoc,
+  arrayUnion,
 } from "firebase/firestore";
 import { auth, db } from "../config/Firebase";
 import { useRouter } from "next/router";
@@ -25,6 +26,8 @@ import { BsTelegram } from "react-icons/bs";
 import { useAuthState } from "react-firebase-hooks/auth";
 import FileBase64 from "react-file-base64";
 import Link from "next/link";
+import UpdatingLoader from "../components/UpdatingLoader";
+import { v4 as uuid } from "uuid";
 
 const LinkPage = () => {
   const router = useRouter();
@@ -35,6 +38,14 @@ const LinkPage = () => {
   const [random, setRandom] = useState(null);
   const [description, setDescription] = useState(null);
   const [name, setName] = useState(null);
+  const [updating, setUpdating] = useState(false);
+  const [previousValue, setPreviousValue] = useState(null);
+  const [error, setError] = useState(false);
+  const [newValue, setNewValue] = useState({
+    textToShow: "",
+    linkToGo: "",
+  });
+  console.log(newValue);
   useEffect(() => {
     if (!id) return;
     const getData = async () => {
@@ -54,45 +65,79 @@ const LinkPage = () => {
   const [user] = useAuthState(auth);
 
   const deleteLink = async (item) => {
-    if (!id) return;
+    setUpdating(true);
+    if (!item) return;
     const pathRef = doc(db, "users", user.email);
     await updateDoc(pathRef, {
       link: arrayRemove(item),
     });
+    setUpdating(false);
     setRandom(Math.random());
   };
 
   const updatePicture = async (url) => {
     if (!url) return;
+    setUpdating(true);
 
     const pathRef = doc(db, "users", user.email);
     await updateDoc(pathRef, {
       imageUrl: url,
     });
-
+    setUpdating(false);
     setRandom(Math.random());
   };
+
   const updateDescription = async (desc) => {
     if (!desc) return;
-
+    setUpdating(true);
     const pathRef = doc(db, "users", user.email);
     await updateDoc(pathRef, {
       description: desc,
     });
-
+    setUpdating(false);
     setRandom(Math.random());
   };
+
   const updateName = async (name) => {
     if (!name) return;
-
+    setUpdating(true);
     const pathRef = doc(db, "users", user.email);
     await updateDoc(pathRef, {
       name: name,
     });
-
+    setUpdating(false);
     setRandom(Math.random());
   };
-  console.log(data);
+  const isValidUrl = (urlString) => {
+    try {
+      return Boolean(new URL(urlString));
+    } catch (e) {
+      return false;
+    }
+  };
+  const editLink = async (previousValue, newValue) => {
+    if (!previousValue || !newValue) return;
+    console.log(newValue);
+    if (!isValidUrl(newValue.linkToGo) || newValue.textToShow.length == 0) {
+      setError(true);
+      return;
+    }
+    setUpdating(true);
+    setError(false);
+    const pathRef = doc(db, "users", user.email);
+    await updateDoc(pathRef, {
+      link: arrayRemove(previousValue),
+    });
+    await updateDoc(pathRef, {
+      link: arrayUnion({
+        id: uuid(),
+        textToShow: newValue.textToShow,
+        linkToGo: newValue.linkToGo,
+      }),
+    });
+    setUpdating(false);
+    setRandom(Math.random());
+  };
   return (
     <>
       {loading ? (
@@ -191,11 +236,29 @@ const LinkPage = () => {
                                         {item.textToShow.charAt(0)}
                                       </span>
                                     )}
-                                    <span>{item.textToShow}</span>
+                                    <a
+                                      href={item.linkToGo}
+                                      rel="norefferer"
+                                      target="_blank"
+                                    >
+                                      {item.textToShow}
+                                    </a>
                                     {user && id == user.uid ? (
-                                      <button onClick={() => deleteLink(item)}>
-                                        <AiFillDelete />
-                                      </button>
+                                      <>
+                                        <button
+                                          onClick={() => deleteLink(item)}
+                                        >
+                                          <AiFillDelete />
+                                        </button>
+
+                                        <label
+                                          htmlFor="my-modal-10"
+                                          className="cursor-pointer"
+                                          onClick={() => setPreviousValue(item)}
+                                        >
+                                          <FaEdit />
+                                        </label>
+                                      </>
                                     ) : null}
                                   </div>
                                 );
@@ -225,7 +288,7 @@ const LinkPage = () => {
                 />
               </p>
               <button className="btn" onClick={() => updatePicture(imageUrl)}>
-                Update
+                {updating ? <UpdatingLoader /> : "Update"}
               </button>
             </label>
           </label>{" "}
@@ -248,7 +311,7 @@ const LinkPage = () => {
                     className="btn "
                     onClick={() => updateDescription(description)}
                   >
-                    Update Description
+                    {updating ? <UpdatingLoader /> : "Update Description"}
                   </button>
                 </div>
               </div>
@@ -268,9 +331,47 @@ const LinkPage = () => {
                   />
 
                   <button className="btn " onClick={() => updateName(name)}>
-                    Update Name
+                    {updating ? <UpdatingLoader /> : "Update Name"}
                   </button>
                 </div>
+              </div>
+            </label>
+          </label>
+          <input type="checkbox" id="my-modal-10" className="modal-toggle" />
+          <label htmlFor="my-modal-10" className="modal cursor-pointer">
+            <label className="modal-box relative" htmlFor="">
+              <div className="flex flex-col gap-2 justify-center items-center">
+                <input
+                  type="text"
+                  placeholder="Text to show"
+                  className="input input-bordered w-full max-w-xs"
+                  onChange={(e) =>
+                    setNewValue({
+                      ...newValue,
+                      textToShow: e.target.value,
+                    })
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="link to go"
+                  className="input input-bordered w-full max-w-xs"
+                  onChange={(e) =>
+                    setNewValue({
+                      ...newValue,
+                      linkToGo: e.target.value,
+                    })
+                  }
+                />
+                <button
+                  className="btn"
+                  onClick={() => editLink(previousValue, newValue)}
+                >
+                  {updating ? <UpdatingLoader /> : "Update link"}
+                </button>
+                {error ? (
+                  <span className="text-red-500">Enter correct details</span>
+                ) : null}
               </div>
             </label>
           </label>

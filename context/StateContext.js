@@ -5,18 +5,18 @@ import { auth, db } from "../config/Firebase";
 
 const Context = createContext();
 export const StateContext = ({ children }) => {
-  const [user] = useAuthState(auth);
-  const [data, setData] = useState(null);
-  useEffect(() => {
-    if (!user) return;
-    const getData = async () => {
-      const docRef = doc(db, "users", user.email);
-      const docSnap = await getDoc(docRef);
-      docSnap.exists() ? setData(docSnap.data()) : setData(null);
-    };
-    getData();
-  }, [user]);
+  // const [user] = useAuthState(auth);
+  // const [data, setData] = useState(null);
+  // useEffect(() => {
+  //   if (!user) return;
+  //   const getData = async () => {
+  //     const docRef = doc(db, "users", user.email);
+  //     const docSnap = await getDoc(docRef);
+  //     docSnap.exists() ? setData(docSnap.data()) : setData(null);
+  //   };
+  //   getData();
+  // }, [user]);
 
-  return <Context.Provider value={{ data }}>{children}</Context.Provider>;
+  return <Context.Provider >{children}</Context.Provider>;
 };
 export const useStateContext = () => useContext(Context);

@@ -6,8 +6,7 @@ import Link from "next/link";
 import { useStateContext } from "../context/StateContext";
 const Home = () => {
   const [user, loading] = useAuthState(auth);
-  const { data } = useStateContext();
-  console.log(data);
+
   const saveUser = async (user) => {
     const userRef = doc(db, "users", user.email);
     const docSnap = await getDoc(userRef);
@@ -44,7 +43,7 @@ const Home = () => {
               <div className="">
                 <Link
                   href={`/${user.uid}`}
-                  className="animate__animated animate__jackInTheBox relative inline-flex items-center justify-start px-6 py-3 overflow-hidden font-medium transition-all bg-white rounded hover:bg-white group"
+                  className="animate__animated animate__fadeIn relative inline-flex items-center justify-start px-6 py-3 overflow-hidden font-medium transition-all bg-white rounded hover:bg-white group"
                 >
                   <span className="w-48 h-48 rounded rotate-[-40deg] bg-purple-600 absolute bottom-0 left-0 -translate-x-full ease-out duration-500 transition-all translate-y-full mb-9 ml-9 group-hover:ml-0 group-hover:mb-32 group-hover:translate-x-0"></span>
                   <span className="relative w-full text-left text-black transition-colors duration-300 ease-in-out group-hover:text-white">
@@ -53,14 +52,14 @@ const Home = () => {
                 </Link>
               </div>
             </div>
-            <h1 className=" animate__animated animate__lightSpeedInRight text-4xl font-semibold leading-[50px] tracking-wide text-transparent bg-clip-text bg-gradient-to-l from-pink-400 to-blue-600 mb-10">
+            <h1 className=" animate__animated animate__fadeIn text-4xl font-semibold leading-[50px] tracking-wide text-transparent bg-clip-text bg-gradient-to-l from-pink-400 to-blue-600 mb-10">
               Create Your Link {user.displayName}
             </h1>
             <div className="grid place-content-center">
               <div className="">
                 <Link
                   href="/create"
-                  className="animate__animated animate__jackInTheBox relative inline-flex items-center justify-start px-6 py-3 overflow-hidden font-medium transition-all bg-white rounded hover:bg-white group"
+                  className="animate__animated animate__fadeIn relative inline-flex items-center justify-start px-6 py-3 overflow-hidden font-medium transition-all bg-white rounded hover:bg-white group"
                 >
                   <span className="w-48 h-48 rounded rotate-[-40deg] bg-purple-600 absolute bottom-0 left-0 -translate-x-full ease-out duration-500 transition-all translate-y-full mb-9 ml-9 group-hover:ml-0 group-hover:mb-32 group-hover:translate-x-0"></span>
                   <span className="relative w-full text-left text-black transition-colors duration-300 ease-in-out group-hover:text-white">
